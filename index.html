@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTS Trading Bot - OAuth Callback</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .instruction {
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .url-container {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .url-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .url-box {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 15px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #2d3748;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .copy-btn {
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        .close-btn {
+            background: #718096;
+        }
+        
+        .close-btn:hover {
+            background: #4a5568;
+        }
+        
+        .status-message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .steps {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 30px;
+        }
+        
+        .steps h3 {
+            color: #c53030;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .steps ol {
+            margin-left: 20px;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+        
+        .steps li {
+            margin-bottom: 8px;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .copy-btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">🎉</div>
+        <h1>Authorization Successful!</h1>
+        <p class="instruction">
+            Your Deriv account has been authorized. Copy the complete URL below and paste it into your trading bot terminal.
+        </p>
+        
+        <div class="url-container">
+            <div class="url-label">Callback URL</div>
+            <div class="url-box" id="callback-url">Loading...</div>
+        </div>
+        
+        <div class="button-group">
+            <button class="copy-btn" onclick="copyUrl()">
+                📋 Copy URL to Clipboard
+            </button>
+            <button class="close-btn" onclick="window.close()">
+                ✕ Close Window
+            </button>
+        </div>
+        
+        <div class="status-message" id="status-message"></div>
+        
+        <div class="steps">
+            <h3>📝 Next Steps:</h3>
+            <ol>
+                <li>Click the <span class="code">📋 Copy URL to Clipboard</span> button above</li>
+                <li>Go back to your terminal where the bot is running</li>
+                <li>Paste the URL when prompted</li>
+                <li>Press <span class="code">Enter</span> to continue</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        // Display the full callback URL
+        const urlElement = document.getElementById('callback-url');
+        const statusElement = document.getElementById('status-message');
+        const fullUrl = window.location.href;
+        
+        // Show the URL
+        urlElement.textContent = fullUrl;
+        
+        // Check if URL contains authorization code
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('code') && !urlParams.has('error')) {
+            urlElement.innerHTML = '<span style="color: #e53e3e;">⚠️ No authorization code found in URL. Please start the OAuth flow from your trading bot.</span>';
+        }
+        
+        // Copy URL function
+        function copyUrl() {
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                // Show success message
+                statusElement.textContent = '✅ URL copied to clipboard! Now paste it into your terminal.';
+                statusElement.className = 'status-message success';
+                statusElement.style.display = 'block';
+                
+                // Hide message after 3 seconds
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = fullUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    statusElement.textContent = '✅ URL copied! Now paste it into your terminal.';
+                    statusElement.className = 'status-message success';
+                    statusElement.style.display = 'block';
+                } catch (err) {
+                    statusElement.textContent = '❌ Could not copy automatically. Please copy the URL manually.';
+                    statusElement.style.display = 'block';
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+        
+        // Auto-focus for better UX
+        document.addEventListener('DOMContentLoaded', () => {
+            urlElement.style.userSelect = 'all';
+        });
+    </script>
+</body>
+</html>
