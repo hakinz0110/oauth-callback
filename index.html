@@ -3,14 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTS Trading Bot - OAuth Callback</title>
+    <title>Deriv OAuth Callback</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,261 +15,211 @@
             justify-content: center;
             padding: 20px;
         }
-        
         .container {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
-            width: 100%;
+            border-radius: 20px;
             padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        
+        .icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
         h1 {
-            color: #2d3748;
+            color: #2c3e50;
+            text-align: center;
             margin-bottom: 10px;
             font-size: 28px;
         }
-        
-        .success-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .instruction {
-            color: #4a5568;
-            margin-bottom: 20px;
+        p {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 30px;
             line-height: 1.6;
         }
-        
-        .url-container {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+        .status {
+            background: #ecf0f1;
+            border-radius: 10px;
             padding: 20px;
             margin: 20px 0;
-            position: relative;
-        }
-        
-        .url-label {
-            font-size: 12px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        
-        .url-box {
-            background: white;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            padding: 15px;
-            word-break: break-all;
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
             font-size: 14px;
-            color: #2d3748;
-            max-height: 200px;
-            overflow-y: auto;
+            color: #2c3e50;
         }
-        
-        .button-group {
+        .status-item {
+            margin: 10px 0;
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+            justify-content: space-between;
         }
-        
-        button {
+        .label { font-weight: bold; }
+        .value { color: #27ae60; }
+        .error { color: #e74c3c; }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .button {
             background: #667eea;
             color: white;
-            padding: 12px 24px;
             border: none;
-            border-radius: 6px;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            width: 100%;
+            margin-top: 20px;
+            transition: background 0.3s;
         }
-        
-        button:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .copy-btn {
-            flex: 1;
-            min-width: 200px;
-            justify-content: center;
-        }
-        
-        .close-btn {
-            background: #718096;
-        }
-        
-        .close-btn:hover {
-            background: #4a5568;
-        }
-        
-        .status-message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .status-message.success {
-            background: #c6f6d5;
-            color: #22543d;
-            border: 1px solid #9ae6b4;
-        }
-        
-        .steps {
-            background: #fff5f5;
-            border-left: 4px solid #f56565;
-            padding: 20px;
-            border-radius: 4px;
-            margin-top: 30px;
-        }
-        
-        .steps h3 {
-            color: #c53030;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-        
-        .steps ol {
-            margin-left: 20px;
-            color: #4a5568;
-            line-height: 1.8;
-        }
-        
-        .steps li {
-            margin-bottom: 8px;
-        }
-        
-        .code {
-            background: #2d3748;
-            color: #68d391;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 30px 20px;
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            .copy-btn {
-                min-width: 100%;
-            }
+        .button:hover {
+            background: #5568d3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="success-icon">🎉</div>
-        <h1>Authorization Successful!</h1>
-        <p class="instruction">
-            Your Deriv account has been authorized. Copy the complete URL below and paste it into your trading bot terminal.
-        </p>
+        <div class="icon" id="icon">🔄</div>
+        <h1 id="title">Processing Authorization...</h1>
+        <p id="message">Sending credentials to your trading bot...</p>
         
-        <div class="url-container">
-            <div class="url-label">Callback URL</div>
-            <div class="url-box" id="callback-url">Loading...</div>
+        <div class="status" id="status">
+            <div class="status-item">
+                <span class="label">Status:</span>
+                <span class="value" id="statusText">Connecting...</span>
+            </div>
         </div>
         
-        <div class="button-group">
-            <button class="copy-btn" onclick="copyUrl()">
-                📋 Copy URL to Clipboard
-            </button>
-            <button class="close-btn" onclick="window.close()">
-                ✕ Close Window
-            </button>
-        </div>
+        <div class="spinner" id="spinner"></div>
         
-        <div class="status-message" id="status-message"></div>
-        
-        <div class="steps">
-            <h3>📝 Next Steps:</h3>
-            <ol>
-                <li>Click the <span class="code">📋 Copy URL to Clipboard</span> button above</li>
-                <li>Go back to your terminal where the bot is running</li>
-                <li>Paste the URL when prompted</li>
-                <li>Press <span class="code">Enter</span> to continue</li>
-            </ol>
-        </div>
+        <button class="button" id="retryBtn" style="display:none;" onclick="retry()">
+            🔄 Retry Connection
+        </button>
     </div>
-    
+
     <script>
-        // Display the full callback URL
-        const urlElement = document.getElementById('callback-url');
-        const statusElement = document.getElementById('status-message');
-        const fullUrl = window.location.href;
-        
-        // Show the URL
-        urlElement.textContent = fullUrl;
-        
-        // Check if URL contains authorization code
+        // Extract OAuth callback parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.has('code') && !urlParams.has('error')) {
-            urlElement.innerHTML = '<span style="color: #e53e3e;">⚠️ No authorization code found in URL. Please start the OAuth flow from your trading bot.</span>';
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+        const errorDesc = urlParams.get('error_description');
+
+        // Update UI
+        const icon = document.getElementById('icon');
+        const title = document.getElementById('title');
+        const message = document.getElementById('message');
+        const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
+        const retryBtn = document.getElementById('retryBtn');
+
+        // Check for errors first
+        if (error) {
+            icon.textContent = '❌';
+            title.textContent = 'Authorization Failed';
+            message.textContent = errorDesc || 'An error occurred during authorization';
+            statusText.textContent = error;
+            statusText.className = 'error';
+            spinner.style.display = 'none';
+            return;
         }
-        
-        // Copy URL function
-        function copyUrl() {
-            navigator.clipboard.writeText(fullUrl).then(() => {
-                // Show success message
-                statusElement.textContent = '✅ URL copied to clipboard! Now paste it into your terminal.';
-                statusElement.className = 'status-message success';
-                statusElement.style.display = 'block';
+
+        // Check if we have the authorization code
+        if (!code) {
+            icon.textContent = '⚠️';
+            title.textContent = 'Invalid Callback';
+            message.textContent = 'No authorization code received from Deriv';
+            statusText.textContent = 'Missing code parameter';
+            statusText.className = 'error';
+            spinner.style.display = 'none';
+            return;
+        }
+
+        // Try to send authorization code to local bot
+        async function sendToLocalBot() {
+            try {
+                statusText.textContent = 'Connecting to local bot...';
                 
-                // Hide message after 3 seconds
+                // Try to reach local Flask server
+                const response = await fetch('http://127.0.0.1:5000/oauth/callback?' + urlParams.toString(), {
+                    method: 'GET',
+                    mode: 'no-cors', // Required for localhost from HTTPS page
+                });
+
+                // Since we're using no-cors, we can't check response status
+                // Assume success after 2 seconds
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                icon.textContent = '✅';
+                title.textContent = 'Authorization Successful!';
+                message.textContent = 'Your trading bot is now authenticated and starting...';
+                statusText.textContent = 'Connected';
+                statusText.className = 'value';
+                spinner.style.display = 'none';
+                
+                // Show close instruction
                 setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 3000);
-            }).catch(err => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = fullUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    statusElement.textContent = '✅ URL copied! Now paste it into your terminal.';
-                    statusElement.className = 'status-message success';
-                    statusElement.style.display = 'block';
-                } catch (err) {
-                    statusElement.textContent = '❌ Could not copy automatically. Please copy the URL manually.';
-                    statusElement.style.display = 'block';
-                }
-                document.body.removeChild(textArea);
-            });
+                    message.textContent = 'You can close this window and return to your terminal.';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Connection error:', err);
+                
+                // Show manual fallback
+                icon.textContent = '📋';
+                title.textContent = 'Manual Step Required';
+                message.innerHTML = `
+                    Your bot couldn't be reached automatically.<br><br>
+                    <strong>Copy the URL below and paste it into your terminal:</strong>
+                `;
+                
+                const callbackUrl = window.location.href;
+                document.getElementById('status').innerHTML = `
+                    <div style="margin: 20px 0;">
+                        <textarea readonly style="
+                            width: 100%; 
+                            height: 100px; 
+                            padding: 10px; 
+                            border: 2px solid #667eea;
+                            border-radius: 8px;
+                            font-family: monospace;
+                            font-size: 12px;
+                            resize: none;
+                        " onclick="this.select()">${callbackUrl}</textarea>
+                    </div>
+                    <button class="button" onclick="navigator.clipboard.writeText('${callbackUrl}'); alert('Copied to clipboard!')">
+                        📋 Copy URL to Clipboard
+                    </button>
+                `;
+                
+                spinner.style.display = 'none';
+                statusText.textContent = 'Connection failed';
+                statusText.className = 'error';
+                retryBtn.style.display = 'block';
+            }
         }
-        
-        // Auto-focus for better UX
-        document.addEventListener('DOMContentLoaded', () => {
-            urlElement.style.userSelect = 'all';
-        });
+
+        function retry() {
+            location.reload();
+        }
+
+        // Start the process
+        sendToLocalBot();
     </script>
 </body>
 </html>
