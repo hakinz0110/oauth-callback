@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deriv OAuth Callback</title>
+    <title>Deriv OAuth - Authorization Successful</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -19,207 +19,268 @@
             background: white;
             border-radius: 20px;
             padding: 40px;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         .icon {
-            font-size: 60px;
+            font-size: 80px;
             text-align: center;
             margin-bottom: 20px;
-            animation: bounce 1s ease infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
         h1 {
             color: #2c3e50;
             text-align: center;
             margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 32px;
         }
-        p {
+        .subtitle {
             color: #7f8c8d;
             text-align: center;
             margin-bottom: 30px;
+            font-size: 16px;
             line-height: 1.6;
         }
-        .status {
-            background: #ecf0f1;
-            border-radius: 10px;
+        .instruction {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
             padding: 20px;
             margin: 20px 0;
-            font-family: monospace;
-            font-size: 14px;
+            border-radius: 8px;
+        }
+        .instruction h3 {
             color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
         }
-        .status-item {
+        .instruction ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+        .instruction ol li {
             margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
         }
-        .label { font-weight: bold; }
-        .value { color: #27ae60; }
-        .error { color: #e74c3c; }
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        .url-box {
+            background: #ecf0f1;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            font-size: 13px;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .url-box:hover {
+            background: #d5dbdf;
+            border-color: #5568d3;
         }
-        .button {
+        .url-box::after {
+            content: '📋 Click to select all';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: -apple-system, sans-serif;
+        }
+        .copy-btn {
             background: #667eea;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
-            margin-top: 20px;
-            transition: background 0.3s;
+            margin: 10px 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .button:hover {
+        .copy-btn:hover {
             background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+        .copy-btn.copied {
+            background: #27ae60;
+        }
+        .manual-btn {
+            background: #95a5a6;
+            margin-top: 10px;
+        }
+        .manual-btn:hover {
+            background: #7f8c8d;
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #856404;
+        }
+        .success-icon {
+            color: #27ae60;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="icon" id="icon">🔄</div>
-        <h1 id="title">Processing Authorization...</h1>
-        <p id="message">Sending credentials to your trading bot...</p>
+        <div class="icon">🎉</div>
+        <h1>Authorization Successful!</h1>
+        <p class="subtitle">Your Deriv account has been authorized. Now send the credentials to your bot.</p>
         
-        <div class="status" id="status">
-            <div class="status-item">
-                <span class="label">Status:</span>
-                <span class="value" id="statusText">Connecting...</span>
-            </div>
+        <div class="instruction">
+            <h3>📌 Choose Your Method:</h3>
+            <ol>
+                <li><strong>Method 1 (Easiest):</strong> Click the big blue button below to copy the URL, then paste it in a new browser tab</li>
+                <li><strong>Method 2:</strong> Click "Try Automatic Redirect" (might not work due to browser security)</li>
+            </ol>
         </div>
-        
-        <div class="spinner" id="spinner"></div>
-        
-        <button class="button" id="retryBtn" style="display:none;" onclick="retry()">
-            🔄 Retry Connection
+
+        <button class="copy-btn" id="copyBtn" onclick="copyAndOpen()">
+            📋 Copy URL & Open in New Tab
         </button>
+
+        <button class="copy-btn manual-btn" id="autoBtn" onclick="tryAutomatic()">
+            🔄 Try Automatic Redirect
+        </button>
+
+        <div class="note">
+            <strong>Note:</strong> The URL contains a one-time authorization code that expires in 10 minutes.
+        </div>
+
+        <div class="instruction">
+            <h3>🔗 Manual Method (if buttons don't work):</h3>
+            <p>Click the box below to select all text, then copy it:</p>
+        </div>
+
+        <div class="url-box" id="urlBox" onclick="selectText()">
+            <span id="localUrl">Loading...</span>
+        </div>
+
+        <div class="instruction" style="margin-top: 30px; background: #e8f5e9; border-color: #27ae60;">
+            <h3>✅ What to do next:</h3>
+            <ol>
+                <li>Copy the URL above (click the blue button or select the text)</li>
+                <li>Open a <strong>NEW browser tab</strong></li>
+                <li>Paste the URL and press Enter</li>
+                <li>Your bot will authenticate and start trading!</li>
+            </ol>
+        </div>
     </div>
 
     <script>
-        // Extract OAuth callback parameters from URL
+        // Get the callback URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
         const error = urlParams.get('error');
-        const errorDesc = urlParams.get('error_description');
 
-        // Update UI
-        const icon = document.getElementById('icon');
-        const title = document.getElementById('title');
-        const message = document.getElementById('message');
-        const statusText = document.getElementById('statusText');
-        const spinner = document.getElementById('spinner');
-        const retryBtn = document.getElementById('retryBtn');
+        // Build the local URL
+        const localUrl = `http://127.0.0.1:5000/oauth/callback?code=${code}&state=${state}`;
+        
+        // Display it
+        document.getElementById('localUrl').textContent = localUrl;
 
-        // Check for errors first
-        if (error) {
-            icon.textContent = '❌';
-            title.textContent = 'Authorization Failed';
-            message.textContent = errorDesc || 'An error occurred during authorization';
-            statusText.textContent = error;
-            statusText.className = 'error';
-            spinner.style.display = 'none';
-            return;
+        // Function to select text
+        function selectText() {
+            const urlBox = document.getElementById('urlBox');
+            const range = document.createRange();
+            range.selectNodeContents(urlBox);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
 
-        // Check if we have the authorization code
-        if (!code) {
-            icon.textContent = '⚠️';
-            title.textContent = 'Invalid Callback';
-            message.textContent = 'No authorization code received from Deriv';
-            statusText.textContent = 'Missing code parameter';
-            statusText.className = 'error';
-            spinner.style.display = 'none';
-            return;
-        }
-
-        // Try to send authorization code to local bot
-        async function sendToLocalBot() {
+        // Function to copy and open
+        async function copyAndOpen() {
+            const btn = document.getElementById('copyBtn');
+            const localUrl = document.getElementById('localUrl').textContent;
+            
             try {
-                statusText.textContent = 'Connecting to local bot...';
+                // Copy to clipboard
+                await navigator.clipboard.writeText(localUrl);
                 
-                // Try to reach local Flask server
-                const response = await fetch('http://127.0.0.1:5000/oauth/callback?' + urlParams.toString(), {
-                    method: 'GET',
-                    mode: 'no-cors', // Required for localhost from HTTPS page
-                });
-
-                // Since we're using no-cors, we can't check response status
-                // Assume success after 2 seconds
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Update button
+                btn.classList.add('copied');
+                btn.innerHTML = '✅ Copied! Now opening new tab...';
                 
-                icon.textContent = '✅';
-                title.textContent = 'Authorization Successful!';
-                message.textContent = 'Your trading bot is now authenticated and starting...';
-                statusText.textContent = 'Connected';
-                statusText.className = 'value';
-                spinner.style.display = 'none';
+                // Wait a moment
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
-                // Show close instruction
+                // Open in new tab
+                window.open(localUrl, '_blank');
+                
+                // Update button again
+                btn.innerHTML = '✅ URL Copied & New Tab Opened!';
+                
+                // Show additional instruction
                 setTimeout(() => {
-                    message.textContent = 'You can close this window and return to your terminal.';
-                }, 2000);
+                    btn.innerHTML = '📋 Copy Again (if needed)';
+                    btn.classList.remove('copied');
+                }, 3000);
                 
             } catch (err) {
-                console.error('Connection error:', err);
-                
-                // Show manual fallback
-                icon.textContent = '📋';
-                title.textContent = 'Manual Step Required';
-                message.innerHTML = `
-                    Your bot couldn't be reached automatically.<br><br>
-                    <strong>Copy the URL below and paste it into your terminal:</strong>
-                `;
-                
-                const callbackUrl = window.location.href;
-                document.getElementById('status').innerHTML = `
-                    <div style="margin: 20px 0;">
-                        <textarea readonly style="
-                            width: 100%; 
-                            height: 100px; 
-                            padding: 10px; 
-                            border: 2px solid #667eea;
-                            border-radius: 8px;
-                            font-family: monospace;
-                            font-size: 12px;
-                            resize: none;
-                        " onclick="this.select()">${callbackUrl}</textarea>
-                    </div>
-                    <button class="button" onclick="navigator.clipboard.writeText('${callbackUrl}'); alert('Copied to clipboard!')">
-                        📋 Copy URL to Clipboard
-                    </button>
-                `;
-                
-                spinner.style.display = 'none';
-                statusText.textContent = 'Connection failed';
-                statusText.className = 'error';
-                retryBtn.style.display = 'block';
+                console.error('Copy failed:', err);
+                alert('Could not copy automatically. Please select the text manually.');
+                selectText();
             }
         }
 
-        function retry() {
-            location.reload();
+        // Function to try automatic redirect
+        async function tryAutomatic() {
+            const btn = document.getElementById('autoBtn');
+            btn.innerHTML = '🔄 Redirecting...';
+            
+            const localUrl = document.getElementById('localUrl').textContent;
+            
+            // Just redirect - simplest approach
+            window.location.href = localUrl;
         }
 
-        // Start the process
-        sendToLocalBot();
+        // Auto-redirect after 2 seconds
+        window.addEventListener('load', () => {
+            const localUrl = document.getElementById('localUrl').textContent;
+            
+            // Show countdown
+            let countdown = 3;
+            const autoBtn = document.getElementById('autoBtn');
+            
+            const interval = setInterval(() => {
+                countdown--;
+                autoBtn.innerHTML = `🔄 Auto-redirecting in ${countdown}...`;
+                
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    autoBtn.innerHTML = '🔄 Redirecting now...';
+                    
+                    // Redirect to local server
+                    setTimeout(() => {
+                        window.location.href = localUrl;
+                    }, 500);
+                }
+            }, 1000);
+            
+            // Also select text for manual backup
+            setTimeout(selectText, 500);
+        });
     </script>
 </body>
 </html>
