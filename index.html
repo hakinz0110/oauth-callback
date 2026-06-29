@@ -1,73 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deriv OAuth - Authorization Successful</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deriv Auth — Connecting...</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 40px 48px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+    }
+    .logo {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #6c63ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.4);
+      font-family: monospace;
+      word-break: break-all;
+    }
+    .error-box {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.85rem;
+      color: #fca5a5;
+      margin-top: 16px;
+      display: none;
+    }
+    .success-icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🔐</div>
+    <div class="spinner" id="spinner"></div>
+    <div class="success-icon" id="successIcon">✅</div>
+    <h1 id="title">Authenticating...</h1>
+    <p id="subtitle">Completing your Deriv login. Please wait.</p>
+    <div class="status" id="status"></div>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <script>
+    // ─── CONFIG ───────────────────────────────────────────────
+    // Point this at your Flask backend running on Termux.
+    // When testing locally: use your phone's LAN IP, e.g. http://192.168.x.x:5000
+    // For production: use a Ngrok/Cloudflare tunnel URL
+    const FLASK_BACKEND = 'http://localhost:5000';
+    // ──────────────────────────────────────────────────────────
+
+    const params    = new URLSearchParams(window.location.search);
+    const code      = params.get('code');
+    const state     = params.get('state');
+    const error     = params.get('error');
+    const errorDesc = params.get('error_description');
+
+    const statusEl  = document.getElementById('status');
+    const titleEl   = document.getElementById('title');
+    const subEl     = document.getElementById('subtitle');
+    const errorBox  = document.getElementById('errorBox');
+    const spinner   = document.getElementById('spinner');
+    const successIcon = document.getElementById('successIcon');
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
+    }
+
+    function showError(msg) {
+      spinner.style.display = 'none';
+      errorBox.style.display = 'block';
+      errorBox.textContent = msg;
+      titleEl.textContent = 'Authentication failed';
+      subEl.textContent = 'Something went wrong. Please close this tab and try again.';
+    }
+
+    function showSuccess() {
+      spinner.style.display = 'none';
+      successIcon.style.display = 'block';
+      titleEl.textContent = 'Connected!';
+      subEl.textContent = 'Redirecting you to the trading dashboard...';
+    }
+
+    async function handleCallback() {
+      // Step 1: Check for OAuth errors from Deriv
+      if (error) {
+        showError(`Deriv returned an error: ${error}. ${errorDesc || ''}`);
+        return;
+      }
+
+      // Step 2: Must have code and state
+      if (!code || !state) {
+        showError('Missing authorization code or state parameter. Invalid callback.');
+        return;
+      }
+
+      setStatus('Validating state...');
+
+      // Step 3: Retrieve stored state and code_verifier from sessionStorage
+      const storedState    = sessionStorage.getItem('oauth_state');
+      const codeVerifier   = sessionStorage.getItem('pkce_code_verifier');
+
+      if (!storedState || !codeVerifier) {
+        showError('Session expired or missing PKCE data. Please start login again.');
+        return;
+      }
+
+      // Step 4: Validate state (CSRF protection)
+      if (state !== storedState) {
+        showError('State mismatch — possible CSRF attack. Login aborted.');
+        return;
+      }
+
+      setStatus('Exchanging auth code with Flask backend...');
+
+      // Step 5: POST code + code_verifier to Flask backend
+      try {
+        const response = await fetch(`${FLASK_BACKEND}/auth/callback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code:          code,
+            code_verifier: codeVerifier,
+            state:         state,
+          }),
+          credentials: 'include',   // send/receive session cookies
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(`Backend error (${response.status}): ${data.error || 'Unknown error'}`);
+          return;
         }
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        .icon {
-            font-size: 80px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 32px;
-        }
-        .subtitle {
-            color: #7f8c8d;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-        .instruction {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-        .instruction h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        .instruction ol {
-            margin-left: 20px;
-            color: #555;
-            line-height: 1.8;
-        }
-        .instruction ol li {
-            margin: 10px 0;
-        }
-        .url-box {
-            background: #ecf0f1;
-            border: 2px solid #667eea;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
+
+        // Step 6: Clean up sessionStorage
+        sessionStorage.removeItem('oauth_state');
+        sessionStorage.removeItem('pkce_code_verifier');
+
+        setStatus(`Logged in as ${data.email || 'user'}`);
+        showSuccess();
+
+        // Step 7: Redirect to the trading dashboard after short delay
+        setTimeout(() => {
+          window.location.href = `${FLASK_BACKEND}/dashboard`;
+        }, 1500);
+
+      } catch (err) {
+        showError(`Could not reach Flask backend at ${FLASK_BACKEND}. Is Termux running? ${err.message}`);
+      }
+    }
+
+    handleCallback();
+  </script>
+</body>
+</html>            font-family: 'Courier New', monospace;
             word-break: break-all;
             font-size: 13px;
             color: #2c3e50;
